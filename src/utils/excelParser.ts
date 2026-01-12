@@ -30,7 +30,9 @@ function normalizeColumnName(name: string): string {
 
 // Find column index by normalized name
 function findColumnIndex(headers: string[], normalizedName: string): number {
-  return headers.findIndex((h) => normalizeColumnName(h) === normalizedName);
+  return headers.findIndex(
+    (h) => normalizeColumnName(String(h)) === normalizedName
+  );
 }
 
 // Parse a single sheet
@@ -44,31 +46,36 @@ function parseSheet(
     defval: "",
   });
 
-  // Find header row (row 6 or 7, but ĐĐGTX sub-columns are at row 8 - index 7)
-  let headerRowIndex = 5;
-  // Check if row 6 (index 5) contains student name header
-  if (jsonData.length > 5) {
-    const row = jsonData[5];
-    const hasNameHeader = row.some(
-      (cell: string) =>
-        normalizeColumnName(String(cell)).includes("hoten") ||
-        normalizeColumnName(String(cell)).includes("hovaten")
-    );
+  // Find header row (but ĐĐGTX sub-columns are at row 8 - index 7)
+  let headerRowIndex = -1;
+  for (let index = 0; index < 7; index++) {
+    if (headerRowIndex === -1) {
+      const row = jsonData[index];
+      const hasNameHeader = row.some(
+        (cell: string) =>
+          normalizeColumnName(String(cell)).includes("hoten") ||
+          normalizeColumnName(String(cell)).includes("hovaten")
+      );
+      if (hasNameHeader) {
+        console.log("has header", index);
+        headerRowIndex = index;
+      }
+    }
+  }
 
-    // Otherwise, header is row 7 (index 6)
-    if (!hasNameHeader) headerRowIndex = 6;
-  } else {
+  if (headerRowIndex === -1) {
     throw new Error(`Không tìm thấy hàng tiêu đề trong sheet "${sheetName}"`);
   }
 
-  // ĐĐGTX sub-columns are always at row 8 (index 7)
-  const ddgtxSubRowIndex = 7;
-  if (jsonData.length < 7) {
+  // ĐĐGTX sub-columns are underneath header row
+  const ddgtxSubRowIndex = headerRowIndex + 1;
+  if (jsonData.length < ddgtxSubRowIndex) {
     throw new Error(`Không tìm thấy hàng DDGTX trong sheet "${sheetName}"`);
   }
 
   const headers = jsonData[headerRowIndex];
   const ddgtxSubHeaders = jsonData[ddgtxSubRowIndex];
+  console.log({ ddgtxSubHeaders });
 
   // Find column indices - try multiple variations for name column
   let nameColIndex = -1;
@@ -89,7 +96,6 @@ function parseSheet(
   }
 
   const ddggkColIndex = findColumnIndex(headers, "đđggk");
-  console.log({ ddggkColIndex, headers });
   const ddgckColIndex = findColumnIndex(headers, "đđgck");
   let dtbmhk1ColIndex = findColumnIndex(headers, "đtbmhk1");
 
@@ -101,7 +107,7 @@ function parseSheet(
   // Find ĐĐGTX columns
   const ddgtxColIndices: number[] = [];
 
-  // Look for columns in row 8 which has numbers 1-5
+  // Look for columns in ddgtx row which has numbers 1-5
   for (let col = 0; col < ddgtxSubHeaders.length; col++) {
     const subHeader = String(ddgtxSubHeaders[col] || "").trim();
     const num = parseInt(subHeader);
@@ -109,9 +115,13 @@ function parseSheet(
     if (!isNaN(num) && num >= 1 && num <= 5) ddgtxColIndices.push(col);
   }
 
-  // Parse students starting from row 9 (index 8)
+  // Parse students starting from row below ddgtx row
   const students: StudentScore[] = [];
-  for (let rowIndex = 8; rowIndex < jsonData.length; rowIndex++) {
+  for (
+    let rowIndex = ddgtxSubRowIndex + 1;
+    rowIndex < jsonData.length;
+    rowIndex++
+  ) {
     const row = jsonData[rowIndex];
     const name = String(row[nameColIndex] || "").trim();
     if (!name) continue;
@@ -143,6 +153,7 @@ function parseSheet(
       dtbmhk1: dtbmhk1 === "" ? "" : parseFloat(String(dtbmhk1)),
     });
   }
+  console.log({ students });
 
   return students;
 }
