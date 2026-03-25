@@ -60,7 +60,7 @@ function valuesEqual(val1: number | string, val2: number | string): boolean {
 function compareDDGTX(
   ddgtx1: (number | string)[],
   ddgtx2: (number | string)[],
-  selectedColumns: string[]
+  selectedColumns: string[],
 ): string[] {
   const differences: string[] = [];
   const maxLength = Math.max(ddgtx1.length, ddgtx2.length);
@@ -83,7 +83,7 @@ const getMissingStudents = (
   students1: StudentScore[],
   students2: StudentScore[],
   file1Map: Map<string, StudentScore>,
-  file2Map: Map<string, StudentScore>
+  file2Map: Map<string, StudentScore>,
 ) => {
   const missingInFile1: string[] = [];
   const missingInFile2: string[] = [];
@@ -121,7 +121,7 @@ const getMissingStudents = (
 function compareSheets(
   sheet1: ParsedSheet,
   sheet2: ParsedSheet,
-  selectedColumns: string[]
+  selectedColumns: string[],
 ): SheetComparisonResult {
   const differences: ScoreDifference[] = [];
 
@@ -133,7 +133,7 @@ function compareSheets(
     sheet1.students,
     sheet2.students,
     file1Map,
-    file2Map
+    file2Map,
   );
 
   // Compare scores for students in both sheets
@@ -149,7 +149,7 @@ function compareSheets(
       const ddgtxDiffs = compareDDGTX(
         student1.ddgtx,
         student2.ddgtx,
-        selectedColumns
+        selectedColumns,
       );
       ddgtxDiffs.forEach((diffType) => {
         const index = parseInt(diffType.replace("ĐĐGTX", "")) - 1;
@@ -188,16 +188,16 @@ function compareSheets(
       });
     }
 
-    // Compare ĐTBMHK1/TBMHK1
+    // Compare ĐTBMHK2/TBMHK2
     if (
-      selectedColumns.includes("ĐTBMHK1") &&
-      !valuesEqual(student1.dtbmhk1, student2.dtbmhk1)
+      selectedColumns.includes("ĐTBMHK2") &&
+      !valuesEqual(student1.dtbmhk2, student2.dtbmhk2)
     ) {
       differences.push({
         studentName,
-        scoreType: "ĐTBMHK1",
-        file1Value: student1.dtbmhk1,
-        file2Value: student2.dtbmhk1,
+        scoreType: "ĐTBMHK2",
+        file1Value: student1.dtbmhk2,
+        file2Value: student2.dtbmhk2,
       });
     }
   });
@@ -214,7 +214,7 @@ export function compareFiles(
   file1: ParsedFile,
   file2: ParsedFile,
   compareMultipleSheets: boolean = false,
-  selectedColumns: string[] = []
+  selectedColumns: string[] = [],
 ): ComparisonResult {
   const sheetResults: SheetComparisonResult[] = [];
 
@@ -247,15 +247,15 @@ export function compareFiles(
   // Calculate totals
   const totalDifferences = sheetResults.reduce(
     (sum, result) => sum + result.differences.length,
-    0
+    0,
   );
   const totalMissingInFile1 = sheetResults.reduce(
     (sum, result) => sum + result.missingInFile1.length,
-    0
+    0,
   );
   const totalMissingInFile2 = sheetResults.reduce(
     (sum, result) => sum + result.missingInFile2.length,
-    0
+    0,
   );
 
   return {

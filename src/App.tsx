@@ -17,7 +17,7 @@ const availableColumns = [
   "ĐĐGTX5",
   "ĐĐGGK",
   "ĐĐGCK",
-  "ĐTBMHK1",
+  "ĐTBMHK2",
 ];
 
 function App() {
@@ -37,7 +37,7 @@ function App() {
 
   const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    fileIndex: number
+    fileIndex: number,
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -55,7 +55,7 @@ function App() {
       setError(
         `Lỗi khi đọc file ${fileIndex}: ${
           (err as Error)?.message || "Lỗi không xác định"
-        }`
+        }`,
       );
       if (fileIndex === 1) setParsedFile1(null);
       else setParsedFile2(null);
@@ -72,13 +72,13 @@ function App() {
         parsedFile1,
         parsedFile2,
         compareMultipleSheets,
-        selectedColumns
+        selectedColumns,
       );
       setComparisonResult(result);
       setError(null);
     } catch (err) {
       setError(
-        `Lỗi khi đối chiếu: ${(err as Error)?.message || "Lỗi không xác định"}`
+        `Lỗi khi đối chiếu: ${(err as Error)?.message || "Lỗi không xác định"}`,
       );
     }
   };
@@ -87,7 +87,7 @@ function App() {
     setSelectedColumns(
       selectedColumns.includes(column)
         ? selectedColumns.filter((c) => c !== column)
-        : [...selectedColumns, column]
+        : [...selectedColumns, column],
     );
   };
 
@@ -207,11 +207,11 @@ function App() {
             <div>
               {renderStudentList(
                 sheetResult.missingInFile1,
-                "Chỉ có trong file 2"
+                "Chỉ có trong file 2",
               )}
               {renderStudentList(
                 sheetResult.missingInFile2,
-                "Chỉ có trong file 1"
+                "Chỉ có trong file 1",
               )}
             </div>
           )}
@@ -230,7 +230,7 @@ function App() {
                       >
                         {header}
                       </th>
-                    )
+                    ),
                   )}
                 </tr>
               </thead>
